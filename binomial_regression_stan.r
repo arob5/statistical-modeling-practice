@@ -7,6 +7,7 @@
 
 library(data.table)
 library(rstan)
+library(boot) # For inv.logit()
 
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
@@ -87,8 +88,13 @@ bm2_coefs <- as.data.table(list(rn = names(bm2$coefficients),
 print(model_coefs[, c('rn', 'mean', 'sd')])
 print(bm2_coefs)
 
+# Plot parameter samples
+params <- extract(fit)
+hist(params$alpha)
+hist(inv.logit(params$alpha)) # Distribution of lighteyed probability for base group (both parents lighteyed)
+mean(inv.logit(params$alpha))
+parent_probs[plight == 2, fitted] # Very similar to prob found by non-Bayesian methods
 
-
-
-
-
+hist(inv.logit(params$alpha + params$beta[, 2])) # Distribution of lighteyed probability when both parents are darkeyed
+mean(inv.logit(params$alpha + params$beta[, 2]))
+parent_probs[pdark == 2, fitted] # Very similar to prob found by non-Bayesian methods
